@@ -35,39 +35,39 @@ class AlbumController {
 
     @GetMapping("/{id}")
     fun getAlbum(@PathVariable id: Long): Album {
-        log.info("get album with id: $id")
+        log.info("attempt to get album with id: $id")
         return albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
     }
 
     @GetMapping("/popular")
     fun getPopularAlbums(): List<Album> {
-        log.info("get popular albums")
+        log.info("attempt to get popular albums")
         return albumRepository.findByOrderByRatingDesc()
     }
 
     @GetMapping("/search")
     fun findAuthor(@RequestParam q: String): List<Album> {
-        log.info("find album by title stars with $q")
+        log.info("attempt to find album by title stars with $q")
         return albumRepository.findAllByTitleStartsWith(q)
     }
 
     @GetMapping("/{id}/albums")
     fun getAlbumAuthors(@PathVariable id: Long): List<Author> {
-        log.info("get authors of album with id: $id")
+        log.info("attempt to get authors of album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
         return album.authors.toList()
     }
 
     @GetMapping("/{id}/compositions")
     fun getAlbumCompositions(@PathVariable id: Long): List<Composition> {
-        log.info("get compositions of album with id: $id")
+        log.info("attempt to get compositions of album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
         return album.compositions.toList()
     }
 
     @GetMapping("/{id}/genres")
     fun getAlbumGenres(@PathVariable id: Long): Set<Genre> {
-        log.info("get genres of album with id: $id")
+        log.info("attempt to get genres of album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
         return album.genres
     }
@@ -75,7 +75,7 @@ class AlbumController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
     fun createAlbumWithTitle(@RequestBody title: String): ResponseEntity<Album> {
-        log.info("create album with title: $title")
+        log.info("attempt to create album with title: $title")
         val album = Album(title)
         val result = albumRepository.save(album)
         log.info("created album id: ${result.id}")
@@ -85,12 +85,13 @@ class AlbumController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/authors")
     fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<Album> {
-        log.info("add to album $id author with name: $authorName")
+        log.info("attempt to add to album $id author with name: $authorName")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
         val author = authorRepository.findByName(authorName).orElseThrow {
             ResourceNotFoundException("Author", "name", authorName) }
         album.addAuthor(author)
         authorRepository.save(author)
+        log.info("$authorName added successfully")
         val result = albumRepository.save(album)
         return ResponseEntity.ok(result)
     }
@@ -98,19 +99,30 @@ class AlbumController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/compositions")
     fun updateCompositions(@PathVariable id: Long, @RequestBody compositionTitle: String): ResponseEntity<Album> {
-        log.info("add to album $id composition with title: $compositionTitle")
+        log.info("attempt to add to album $id composition with title: $compositionTitle")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
         val composition = compositionRepository.findByTitle(compositionTitle).orElseThrow {
             ResourceNotFoundException("Composition", "title", compositionTitle) }
         album.addComposition(composition)
         compositionRepository.save(composition)
+        log.info("$compositionTitle added successfully, attempt to update genres")
         val result = updateAlbumGenresFromComposition(album, composition)
         return ResponseEntity.ok(albumRepository.save(result))
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    fun deleteAlbum(@PathVariable id: Long): ResponseEntity<Long> {
+        val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
+        log.info("attempt to delete album ${album.title}")
+        albumRepository.delete(album)
+        return ResponseEntity.ok(id)
     }
 
     private fun updateAlbumGenresFromComposition(album: Album, composition: Composition): Album {
         album.genres += composition.genres
         val difference = composition.genres - album.genres
+        log.info("${difference.size} genres are different")
         difference.forEach { it.albums.add(album) }
         genreRepository.saveAll(difference)
         return album

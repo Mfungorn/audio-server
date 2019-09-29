@@ -40,28 +40,35 @@ class GenreController {
 
     @GetMapping("/{name}/authors")
     fun getAuthorsByGenre(@PathVariable name: String): List<Author> {
+        log.info("attempt to get authors with genre $name")
         val genre = genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
         val result = authorRepository.findAllByGenres(genre)
+        log.info("find ${result.size} authors")
         return result.sortedByDescending { it.rating }
     }
 
     @GetMapping("/{name}/albums")
     fun getAlbumsByGenre(@PathVariable name: String): List<Album> {
+        log.info("attempt to get albums with genre $name")
         val genre = genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
         val result = albumRepository.findAllByGenres(genre)
+        log.info("find ${result.size} albums")
         return result.sortedByDescending { it.rating }
     }
 
     @GetMapping("/{name}/compositions")
     fun getCompositionsByGenre(@PathVariable name: String): List<Composition> {
+        log.info("attempt to get compositions with genre $name")
         val genre = genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
         val result = compositionRepository.findAllByGenres(genre)
+        log.info("find ${result.size} compositions")
         return result.sortedByDescending { it.rating }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
     fun createGenre(@RequestBody name: String): ResponseEntity<Genre> {
+        log.info("attempt to create genre: $name")
         val genre = Genre(name)
         val result = genreRepository.save(genre)
         return ResponseEntity.ok(result)
@@ -71,6 +78,7 @@ class GenreController {
     @DeleteMapping("/{name}")
     fun deleteGenre(@PathVariable name: String): ResponseEntity<String> {
         val genre = genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
+        log.info("attempt to delete genre $name")
         genreRepository.delete(genre)
         return ResponseEntity.ok(name)
     }

@@ -1,4 +1,4 @@
-package org.quest.controllers
+package org.quest.payload
 
 class ApiResponse(
         private var success: Boolean,

@@ -4,12 +4,14 @@ import org.quest.exception.BadRequestException
 import org.quest.models.AuthProvider
 import org.quest.models.Customer
 import org.quest.models.Manager
+import org.quest.payload.ApiResponse
 import org.quest.payload.AuthResponse
 import org.quest.payload.LoginRequest
 import org.quest.payload.SignUpRequest
 import org.quest.repositories.CustomerRepository
 import org.quest.repositories.ManagerRepository
 import org.quest.security.TokenProvider
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -28,25 +30,28 @@ import org.springframework.security.authentication.AuthenticationManager
 @RestController
 @RequestMapping("/auth")
 class AuthController {
-    @Autowired
-    private val authenticationManager: AuthenticationManager? = null
+    private val log = LoggerFactory.getLogger("AuthController")
 
     @Autowired
-    private val customerRepository: CustomerRepository? = null
+    private lateinit var authenticationManager: AuthenticationManager
 
     @Autowired
-    private val managerRepository: ManagerRepository? = null
+    private lateinit var customerRepository: CustomerRepository
 
     @Autowired
-    private val passwordEncoder: PasswordEncoder? = null
+    private lateinit var managerRepository: ManagerRepository
 
     @Autowired
-    private val tokenProvider: TokenProvider? = null
+    private lateinit var passwordEncoder: PasswordEncoder
+
+    @Autowired
+    private lateinit var tokenProvider: TokenProvider
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/login")
     fun authenticateCustomer(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<*> {
-        val authentication = authenticationManager!!.authenticate(
+        log.info("attempt to authenticate customer ${loginRequest.getEmail()}")
+        val authentication = authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
                         loginRequest.getPassword()
@@ -55,14 +60,34 @@ class AuthController {
 
         SecurityContextHolder.getContext().authentication = authentication
 
-        val token = tokenProvider!!.createToken(authentication)
+        val token = tokenProvider.createToken(authentication)
+        return ResponseEntity.ok<Any>(AuthResponse(token))
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/login")
+    fun authenticateManager(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<*> {
+        log.info("attempt to authenticate manager ${loginRequest.getEmail()}")
+        val authentication = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        )
+
+        SecurityContextHolder.getContext().authentication = authentication
+
+        val token = tokenProvider.createToken(authentication)
         return ResponseEntity.ok<Any>(AuthResponse(token))
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register/customer")
     fun registerCustomer(@Valid @RequestBody signUpRequest: SignUpRequest): ResponseEntity<*> {
-        if (customerRepository!!.existsByEmail(signUpRequest.getEmail()!!)!!) {
+        log.info("attempt to register customer ${signUpRequest.getEmail()}")
+
+        if (customerRepository.existsByEmail(signUpRequest.getEmail()!!)!!) {
+            log.info("customer with this email already exists")
             throw BadRequestException("Email address already in use.")
         }
 
@@ -75,7 +100,7 @@ class AuthController {
         customer.phone = ""
         customer.provider = AuthProvider.local
 
-        customer.password = passwordEncoder!!.encode(customer.password)
+        customer.password = passwordEncoder.encode(customer.password)
 
         val result = customerRepository.save(customer)
 
@@ -90,7 +115,9 @@ class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register/manager")
     fun registerManager(@Valid @RequestBody signUpRequest: SignUpRequest): ResponseEntity<*> {
-        if (managerRepository!!.existsByEmail(signUpRequest.getEmail()!!)!!) {
+        log.info("attempt to register manager ${signUpRequest.getEmail()}")
+        if (managerRepository.existsByEmail(signUpRequest.getEmail()!!)!!) {
+            log.info("manager with this email already exists")
             throw BadRequestException("Email address already in use.")
         }
 
@@ -101,7 +128,7 @@ class AuthController {
         manager.password = signUpRequest.getPassword()
         manager.provider = AuthProvider.local
 
-        manager.password = passwordEncoder!!.encode(manager.password)
+        manager.password = passwordEncoder.encode(manager.password)
 
         val result = managerRepository.save(manager)
 
