@@ -1,0 +1,71 @@
+plugins {
+    id 'org.jetbrains.kotlin.plugin.jpa' version '1.3.11'
+    id 'org.springframework.boot' version '2.1.3.RELEASE'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.3.11'
+}
+group 'Server-Audio'
+apply plugin: 'kotlin-jpa'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "application"
+apply plugin: 'kotlin-kapt'
+apply plugin: 'idea'
+//make all class open for jpa
+apply plugin: 'kotlin-allopen'
+allOpen {
+    annotation("javax.persistence.Entity")
+}
+
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+idea {
+    module {
+        def kaptMain = file("${project.buildDir}/generated/source/kapt/main")
+        sourceDirs += kaptMain
+        generatedSourceDirs += kaptMain
+
+        outputDir file("${project.buildDir}/classes/main")
+        testOutputDir file("${project.buildDir}/classes/test")
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //Security
+    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.1.3.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.1.4.RELEASE'
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.6.0'
+
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.1.Final'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
+
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    testCompile("org.springframework.boot:spring-boot-starter-test") {
+        exclude module: 'junit'
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
+    configurations.kapt.extendsFrom(configurations.compileOnly)
+
+}
+compileJava.dependsOn(processResources)
+test {
+    useJUnitPlatform()
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
