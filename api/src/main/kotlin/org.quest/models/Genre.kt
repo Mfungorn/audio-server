@@ -6,7 +6,7 @@ import javax.persistence.*
 @Entity
 @Table(name = "genre")
 data class Genre(
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     val name: String
 ) {
     @Id

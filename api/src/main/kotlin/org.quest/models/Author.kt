@@ -41,4 +41,14 @@ data class Author(
     @Column(name = "genres")
     @ManyToMany(mappedBy = "authors")
     val genres: MutableSet<Genre> = mutableSetOf()
+
+    fun addAlbum(album: Album) {
+        albums.add(album)
+        album.authors.add(this)
+    }
+
+    fun addComposition(composition: Composition) {
+        compositions.add(composition)
+        composition.authors.add(this)
+    }
 }
