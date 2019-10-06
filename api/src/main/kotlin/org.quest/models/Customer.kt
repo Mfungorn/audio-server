@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull
 class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "customer_id")
     val id: Long? = null
 
     @Column(name = "name", nullable = false)
@@ -41,4 +41,28 @@ class Customer {
     lateinit var provider: AuthProvider
 
     var providerId: String? = null
+
+    @JsonIgnore
+    @Column(name = "fav_authors")
+    @ManyToMany(cascade = [
+        CascadeType.PERSIST,
+        CascadeType.MERGE
+    ])
+    @JoinTable(
+            name = "customer_author",
+            joinColumns = [JoinColumn(name = "customer_id")],
+            inverseJoinColumns = [JoinColumn(name = "author_id")])
+    val favoriteAuthors: MutableSet<Author> = mutableSetOf()
+
+    @JsonIgnore
+    @Column(name = "fav_compositions")
+    @ManyToMany(cascade = [
+        CascadeType.PERSIST,
+        CascadeType.MERGE
+    ])
+    @JoinTable(
+            name = "customer_composition",
+            joinColumns = [JoinColumn(name = "customer_id")],
+            inverseJoinColumns = [JoinColumn(name = "composition_id")])
+    val favoriteCompositions: MutableSet<Composition> = mutableSetOf()
 }

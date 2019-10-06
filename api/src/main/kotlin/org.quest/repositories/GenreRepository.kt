@@ -9,4 +9,5 @@ import java.util.*
 @Repository
 interface GenreRepository : JpaRepository<Genre, Long> {
     fun findByName(name: String): Optional<Genre>
+    fun findAllByNameStartsWith(q: String): Set<Genre>
 }

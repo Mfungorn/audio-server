@@ -5,15 +5,15 @@ import org.quest.models.Album
 import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
-import org.quest.repositories.AlbumRepository
-import org.quest.repositories.AuthorRepository
-import org.quest.repositories.CompositionRepository
-import org.quest.repositories.GenreRepository
+import org.quest.repositories.*
+import org.quest.security.TokenProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
+import java.lang.RuntimeException
 
 @RestController
 @RequestMapping("/authors")
@@ -32,6 +32,12 @@ class AuthorController {
 
     @Autowired
     private lateinit var genreRepository: GenreRepository
+
+    @Autowired
+    private lateinit var customerRepository: CustomerRepository
+
+    @Autowired
+    private lateinit var tokenProvider: TokenProvider
 
     @GetMapping("/{id}")
     fun getAuthor(@PathVariable id: Long): Author {
@@ -83,8 +89,8 @@ class AuthorController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/albums")
-    fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<Author> {
+    @PatchMapping("/{id}/albums")
+    fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<String> {
         log.info("attempt to add to author $id album with title: $albumTitle")
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
         val album = albumRepository.findByTitle(albumTitle).orElseThrow {
@@ -93,12 +99,13 @@ class AuthorController {
         albumRepository.save(album)
         log.info("$albumTitle added successfully, attempt to update genres")
         val result = updateAuthorGenresFromAlbum(author, album)
-        return ResponseEntity.ok(authorRepository.save(result))
+        authorRepository.save(result)
+        return ResponseEntity.ok("Album added to author")
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/compositions")
-    fun updateCompositions(@PathVariable id: Long, @RequestBody compositionTitle: String): ResponseEntity<Author> {
+    @PatchMapping("/{id}/compositions")
+    fun updateCompositions(@PathVariable id: Long, @RequestBody compositionTitle: String): ResponseEntity<String> {
         log.info("attempt to  add to author $id composition with title: $compositionTitle")
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
         val composition = compositionRepository.findByTitle(compositionTitle).orElseThrow {
@@ -107,7 +114,32 @@ class AuthorController {
         compositionRepository.save(composition)
         log.info("$compositionTitle added successfully, attempt to update genres")
         val result = updateAuthorGenresFromComposition(author, composition)
-        return ResponseEntity.ok(authorRepository.save(result))
+        authorRepository.save(result)
+        return ResponseEntity.ok("Composition added to author")
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PatchMapping("/{id}/favorite")
+    fun addToFavorite(
+            @RequestHeader(value = "Authorization") authorization: String,
+            @PathVariable id: Long
+    ): ResponseEntity<String> {
+        log.info("attempt to find customer and add favorite author with id: $id")
+        val token = if (authorization.startsWith("Bearer ")) {
+            authorization.substring(7, authorization.length)
+        } else {
+            throw BadCredentialsException("Invalid token")
+        }
+        val customerId = tokenProvider.getUserIdFromToken(token) ?: throw BadCredentialsException("Invalid token")
+        val customer = customerRepository.findById(customerId)
+                .orElseThrow { ResourceNotFoundException("User", "id", customerId) }
+        log.info("find customer - ${customer.name}")
+        val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
+        log.info("find author - ${author.name}")
+        author.addCustomer(customer)
+        customerRepository.save(customer)
+        authorRepository.save(author)
+        return ResponseEntity.ok("Author added to favorite")
     }
 
     @PreAuthorize("hasRole('ADMIN')")
