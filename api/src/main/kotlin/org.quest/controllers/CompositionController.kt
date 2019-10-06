@@ -6,14 +6,13 @@ import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
 import org.quest.payload.CompositionPayload
-import org.quest.repositories.AlbumRepository
-import org.quest.repositories.AuthorRepository
-import org.quest.repositories.CompositionRepository
-import org.quest.repositories.GenreRepository
+import org.quest.repositories.*
+import org.quest.security.TokenProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -33,6 +32,12 @@ class CompositionController {
 
     @Autowired
     private lateinit var genreRepository: GenreRepository
+
+    @Autowired
+    private lateinit var customerRepository: CustomerRepository
+
+    @Autowired
+    private lateinit var tokenProvider: TokenProvider
 
     @GetMapping("/{id}")
     fun getComposition(@PathVariable id: Long): Composition {
@@ -92,8 +97,8 @@ class CompositionController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/authors")
-    fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<Composition> {
+    @PatchMapping("/{id}/authors")
+    fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<String> {
         log.info("attempt to add to composition $id author with name: $authorName")
         val composition = compositionRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Composition", "id", id) }
@@ -102,12 +107,12 @@ class CompositionController {
         composition.addAuthor(author)
         authorRepository.save(author)
         val result = compositionRepository.save(composition)
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok("Author added to composition")
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/albums")
-    fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<Composition> {
+    @PatchMapping("/{id}/albums")
+    fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<String> {
         log.info("attempt to add to composition $id album with title: $albumTitle")
         val composition = compositionRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Composition", "id", id) }
@@ -116,12 +121,12 @@ class CompositionController {
         composition.addAlbum(album)
         albumRepository.save(album)
         val result = compositionRepository.save(composition)
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok("Album added to composition")
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/genres")
-    fun addGenre(@PathVariable id: Long, @RequestBody genreName: String): ResponseEntity<Composition> {
+    @PatchMapping("/{id}/genres")
+    fun addGenre(@PathVariable id: Long, @RequestBody genreName: String): ResponseEntity<String> {
         log.info("attempt to add genre: $genreName to composition $id")
         val composition = compositionRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Composition", "id", id) }
@@ -130,7 +135,32 @@ class CompositionController {
         composition.addGenre(genre)
         genreRepository.save(genre)
         val result = compositionRepository.save(composition)
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok("Genre added to composition")
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PatchMapping("/{id}/favorite")
+    fun addToFavorite(
+            @RequestHeader(value = "Authorization") authorization: String,
+            @PathVariable id: Long
+    ): ResponseEntity<String> {
+        log.info("attempt to find customer and add favorite composition with id: $id")
+        val token = if (authorization.startsWith("Bearer ")) {
+            authorization.substring(7, authorization.length)
+        } else {
+            throw BadCredentialsException("Invalid token")
+        }
+        val customerId = tokenProvider.getUserIdFromToken(token) ?: throw BadCredentialsException("Invalid token")
+        val customer = customerRepository.findById(customerId)
+                .orElseThrow { ResourceNotFoundException("User", "id", customerId) }
+        log.info("find customer - ${customer.name}")
+        val composition = compositionRepository.findById(id)
+                .orElseThrow { ResourceNotFoundException("Composition", "id", id) }
+        log.info("find composition - ${composition.title}")
+        composition.addCustomer(customer)
+        customerRepository.save(customer)
+        compositionRepository.save(composition)
+        return ResponseEntity.ok("Composition added to favorite")
     }
 
     @PreAuthorize("hasRole('ADMIN')")

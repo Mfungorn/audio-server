@@ -48,6 +48,11 @@ data class Composition(
     @ManyToMany(mappedBy = "compositions")
     val genres: MutableSet<Genre> = mutableSetOf()
 
+    @JsonIgnore
+    @Column(name = "customers")
+    @ManyToMany(mappedBy = "compositions")
+    val customers: MutableSet<Customer> = mutableSetOf()
+
     fun addAuthor(author: Author) {
         authors.add(author)
         author.compositions.add(this)
@@ -61,5 +66,10 @@ data class Composition(
     fun addGenre(genre: Genre) {
         genres.add(genre)
         genre.compositions.add(this)
+    }
+
+    fun addCustomer(customer: Customer) {
+        customers.add(customer)
+        customer.favoriteCompositions.add(this)
     }
 }
