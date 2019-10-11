@@ -5,10 +5,13 @@ import org.quest.models.Album
 import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
+import org.quest.payload.AlbumPayload
 import org.quest.repositories.AlbumRepository
 import org.quest.repositories.AuthorRepository
 import org.quest.repositories.CompositionRepository
 import org.quest.repositories.GenreRepository
+import org.quest.util.mapToAlbumPayload
+import org.quest.util.mapToAlbumPayloadList
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -34,21 +37,25 @@ class AlbumController {
     private lateinit var genreRepository: GenreRepository
 
     @GetMapping("/{id}")
-    fun getAlbum(@PathVariable id: Long): Album {
+    fun getAlbum(@PathVariable id: Long): ResponseEntity<AlbumPayload> {
         log.info("attempt to get album with id: $id")
-        return albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
+        val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
+        val payload = album.mapToAlbumPayload()
+        return ResponseEntity.ok(payload)
     }
 
     @GetMapping("/popular")
-    fun getPopularAlbums(): List<Album> {
+    fun getPopularAlbums(): ArrayList<AlbumPayload> {
         log.info("attempt to get popular albums")
-        return albumRepository.findByOrderByRatingDesc()
+        val sortedAlbums = albumRepository.findByOrderByRatingDesc()
+        return sortedAlbums.mapToAlbumPayloadList()
     }
 
     @GetMapping("/search")
-    fun findAuthor(@RequestParam q: String): List<Album> {
+    fun findAlbum(@RequestParam q: String): ArrayList<AlbumPayload> {
         log.info("attempt to find album by title stars with $q")
-        return albumRepository.findAllByTitleStartsWith(q)
+        val results = albumRepository.findAllByTitleStartsWith(q)
+        return results.mapToAlbumPayloadList()
     }
 
     @GetMapping("/{id}/albums")
@@ -74,12 +81,12 @@ class AlbumController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
-    fun createAlbumWithTitle(@RequestBody title: String): ResponseEntity<Album> {
+    fun createAlbumWithTitle(@RequestBody title: String): ResponseEntity<AlbumPayload> {
         log.info("attempt to create album with title: $title")
         val album = Album(title)
         val result = albumRepository.save(album)
         log.info("created album id: ${result.id}")
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok(result.mapToAlbumPayload())
     }
 
     @PreAuthorize("hasRole('ADMIN')")

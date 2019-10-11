@@ -16,7 +16,10 @@ data class Composition(
     val text: String,
 
     @Column(name = "price")
-    val price: Int
+    val price: Int,
+
+    @Column(name = "cover")
+    val cover: String = ""
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

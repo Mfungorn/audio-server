@@ -5,15 +5,16 @@ import org.quest.models.Album
 import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
+import org.quest.payload.AlbumPayload
 import org.quest.repositories.*
 import org.quest.security.TokenProvider
+import org.quest.util.mapToAlbumPayloadList
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
-import java.lang.RuntimeException
 
 @RestController
 @RequestMapping("/authors")
@@ -58,10 +59,10 @@ class AuthorController {
     }
 
     @GetMapping("/{id}/albums")
-    fun getAuthorAlbums(@PathVariable id: Long): List<Album> {
+    fun getAuthorAlbums(@PathVariable id: Long): List<AlbumPayload> {
         log.info("attempt to get albums of author with id: $id")
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
-        return author.albums.toList()
+        return author.albums.toList().mapToAlbumPayloadList()
     }
 
     @GetMapping("/{id}/compositions")
@@ -83,6 +84,19 @@ class AuthorController {
     fun createAuthorWithName(@RequestBody authorName: String): ResponseEntity<Author> {
         log.info("attempt to create author with name: $authorName")
         val author = Author(authorName)
+        val result = authorRepository.save(author)
+        log.info("created author id: ${result.id}")
+        return ResponseEntity.ok(result)
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+    fun createAuthor(@RequestBody payload: AuthorPostPayload): ResponseEntity<Author> {
+        log.info("attempt to create author with name: ${payload.name}")
+        val author = Author(
+                payload.name,
+                payload.bio
+        )
         val result = authorRepository.save(author)
         log.info("created author id: ${result.id}")
         return ResponseEntity.ok(result)

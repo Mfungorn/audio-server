@@ -1,13 +1,12 @@
 package org.quest.payload
 
-data class CompositionPayload(
+data class AlbumPayload(
         val id: Long?,
         val title: String,
-        val duration: Int,
-        val text: String = "",
-        val price: Int,
+        val cover: String,
         val rating: Int,
-        val cover: String = "",
+        val price: Int = 0,
         val authorName: String,
+        val tracksCount: Int,
         val genre: String
 )

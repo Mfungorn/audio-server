@@ -7,7 +7,10 @@ import javax.persistence.*
 @Table(name = "author")
 data class Author(
         @Column(name = "name")
-        var name: String
+        var name: String,
+
+        @Column(name = "bio")
+        var bio: String = "No bio"
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

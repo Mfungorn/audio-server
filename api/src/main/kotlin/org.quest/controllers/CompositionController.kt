@@ -1,13 +1,17 @@
 package org.quest.controllers
 
 import org.quest.exception.ResourceNotFoundException
-import org.quest.models.Album
 import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
+import org.quest.payload.AlbumPayload
 import org.quest.payload.CompositionPayload
+import org.quest.payload.CompositionPostPayload
 import org.quest.repositories.*
 import org.quest.security.TokenProvider
+import org.quest.util.mapToAlbumPayloadList
+import org.quest.util.mapToCompositionPayload
+import org.quest.util.mapToCompositionPayloadList
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -40,21 +44,26 @@ class CompositionController {
     private lateinit var tokenProvider: TokenProvider
 
     @GetMapping("/{id}")
-    fun getComposition(@PathVariable id: Long): Composition {
+    fun getComposition(@PathVariable id: Long): CompositionPayload {
         log.info("get composition with id: $id")
-        return compositionRepository.findById(id).orElseThrow { ResourceNotFoundException("Composition", "id", id) }
+        val composition = compositionRepository
+                .findById(id)
+                .orElseThrow { ResourceNotFoundException("Composition", "id", id) }
+        return composition.mapToCompositionPayload()
     }
 
     @GetMapping("/popular")
-    fun getPopularCompositions(): List<Composition> {
+    fun getPopularCompositions(): List<CompositionPayload> {
         log.info("attempt to get popular compositions")
-        return compositionRepository.findByOrderByRatingDesc()
+        val result = compositionRepository.findByOrderByRatingDesc()
+        return result.mapToCompositionPayloadList()
     }
 
     @GetMapping("/search")
-    fun findComposition(@RequestParam q: String): List<Composition> {
+    fun findComposition(@RequestParam q: String): List<CompositionPayload> {
         log.info("attempt to find composition by title stars with $q")
-        return compositionRepository.findAllByTitleStartsWith(q)
+        val result = compositionRepository.findAllByTitleStartsWith(q)
+        return result.mapToCompositionPayloadList()
     }
 
     @GetMapping("/{id}/authors")
@@ -66,11 +75,11 @@ class CompositionController {
     }
 
     @GetMapping("/{id}/albums")
-    fun getCompositionAlbums(@PathVariable id: Long): List<Album> {
+    fun getCompositionAlbums(@PathVariable id: Long): List<AlbumPayload> {
         log.info("attempt to get albums with composition with id: $id")
         val composition = compositionRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Composition", "id", id) }
-        return composition.albums.toList()
+        return composition.albums.toList().mapToAlbumPayloadList()
     }
 
     @GetMapping("/{id}/genres")
@@ -83,15 +92,16 @@ class CompositionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
-    fun createComposition(@RequestBody payload: CompositionPayload): ResponseEntity<Composition> {
-        log.info("attempt to create composition with title: ${payload.title}")
+    fun createComposition(@RequestBody postPayload: CompositionPostPayload): ResponseEntity<CompositionPayload> {
+        log.info("attempt to create composition with title: ${postPayload.title}")
         val composition = Composition(
-                payload.title,
-                payload.duration,
-                payload.text,
-                payload.price
+                postPayload.title,
+                postPayload.duration,
+                postPayload.text,
+                postPayload.price,
+                postPayload.cover
         )
-        val result = compositionRepository.save(composition)
+        val result = compositionRepository.save(composition).mapToCompositionPayload()
         log.info("created composition id: ${result.id}")
         return ResponseEntity.ok(result)
     }
