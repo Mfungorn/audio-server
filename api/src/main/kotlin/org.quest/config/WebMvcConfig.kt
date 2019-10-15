@@ -12,7 +12,6 @@ class WebMvcConfig : WebMvcConfigurer {
         private const val MAX_AGE_SECS: Long = 3600
     }
 
-
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
                 .allowedOrigins("*")

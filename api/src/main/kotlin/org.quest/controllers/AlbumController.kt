@@ -44,6 +44,20 @@ class AlbumController {
         return ResponseEntity.ok(payload)
     }
 
+    @GetMapping("/{title}")
+    fun getAlbum(@PathVariable title: String): ResponseEntity<AlbumPayload> {
+        log.info("attempt to get album with title: $title")
+        val album = albumRepository.findByTitle(title).orElseThrow { ResourceNotFoundException("Album", "title", title) }
+        val payload = album.mapToAlbumPayload()
+        return ResponseEntity.ok(payload)
+    }
+
+    @GetMapping
+    fun getAlbums(): List<Album> {
+        log.info("attempt to get all albums")
+        return albumRepository.findAll()
+    }
+
     @GetMapping("/popular")
     fun getPopularAlbums(): ArrayList<AlbumPayload> {
         log.info("attempt to get popular albums")
@@ -58,7 +72,7 @@ class AlbumController {
         return results.mapToAlbumPayloadList()
     }
 
-    @GetMapping("/{id}/albums")
+    @GetMapping("/{id}/authors")
     fun getAlbumAuthors(@PathVariable id: Long): List<Author> {
         log.info("attempt to get authors of album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }

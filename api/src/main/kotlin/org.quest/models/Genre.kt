@@ -1,6 +1,6 @@
 package org.quest.models
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import javax.persistence.*
 
 @Entity
@@ -14,7 +14,8 @@ data class Genre(
     @Column(name = "genre_id")
     val id: Long? = null
 
-    @JsonIgnore
+    //@JsonIgnore
+    @JsonIgnoreProperties("genres")
     @Column(name = "compositions")
     @ManyToMany(cascade = [
         CascadeType.PERSIST,
@@ -26,7 +27,8 @@ data class Genre(
             inverseJoinColumns = [JoinColumn(name = "composition_id")])
     val compositions: MutableSet<Composition> = mutableSetOf()
 
-    @JsonIgnore
+    //@JsonIgnore
+    @JsonIgnoreProperties("genres")
     @Column(name = "authors")
     @ManyToMany(cascade = [
         CascadeType.PERSIST,
@@ -38,7 +40,8 @@ data class Genre(
             inverseJoinColumns = [JoinColumn(name = "author_id")])
     val authors: MutableSet<Author> = mutableSetOf()
 
-    @JsonIgnore
+    //@JsonIgnore
+    @JsonIgnoreProperties("genres")
     @Column(name = "albums")
     @ManyToMany(cascade = [
         CascadeType.PERSIST,

@@ -12,7 +12,7 @@ class Manager {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    val id: Long? = null
+    var id: Long? = null
 
     @Column(name = "name", nullable = false)
     lateinit var name: String
@@ -33,4 +33,17 @@ class Manager {
     lateinit var provider: AuthProvider
 
     var providerId: String? = null
+
+    companion object {
+        fun generate(id: Long, name: String, email: String, password: String): Manager {
+            val manager = Manager()
+            manager.id = id
+            manager.name = name
+            manager.email = email
+            manager.password = password
+            manager.provider = AuthProvider.local
+
+            return manager
+        }
+    }
 }

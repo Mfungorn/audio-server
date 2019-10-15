@@ -46,6 +46,18 @@ class AuthorController {
         return authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
     }
 
+    @GetMapping("/{name}")
+    fun getAuthor(@PathVariable name: String): Author {
+        log.info("attempt to get author with name: $name")
+        return authorRepository.findByName(name).orElseThrow { ResourceNotFoundException("Author", "name", name) }
+    }
+
+    @GetMapping
+    fun getAuthors(): List<Author> {
+        log.info("attempt to get all authors")
+        return authorRepository.findAll()
+    }
+
     @GetMapping("/popular")
     fun getPopularAuthors(): List<Author> {
         log.info("attempt to get popular authors")
@@ -79,15 +91,15 @@ class AuthorController {
         return author.genres
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
-    fun createAuthorWithName(@RequestBody authorName: String): ResponseEntity<Author> {
-        log.info("attempt to create author with name: $authorName")
-        val author = Author(authorName)
-        val result = authorRepository.save(author)
-        log.info("created author id: ${result.id}")
-        return ResponseEntity.ok(result)
-    }
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+//    fun createAuthorWithName(@RequestBody authorName: String): ResponseEntity<Author> {
+//        log.info("attempt to create author with name: $authorName")
+//        val author = Author(authorName)
+//        val result = authorRepository.save(author)
+//        log.info("created author id: ${result.id}")
+//        return ResponseEntity.ok(result)
+//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])

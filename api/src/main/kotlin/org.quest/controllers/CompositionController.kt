@@ -52,6 +52,12 @@ class CompositionController {
         return composition.mapToCompositionPayload()
     }
 
+    @GetMapping
+    fun getCompositions(): List<Composition> {
+        log.info("attempt to get compositions")
+        return compositionRepository.findAll()
+    }
+
     @GetMapping("/popular")
     fun getPopularCompositions(): List<CompositionPayload> {
         log.info("attempt to get popular compositions")

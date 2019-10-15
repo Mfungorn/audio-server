@@ -1,14 +1,18 @@
 package org.quest.models
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.hibernate.annotations.LazyCollection
-import org.hibernate.annotations.LazyCollectionOption
 import javax.persistence.*
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "customer", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])]
+@Table(
+        name = "customer",
+        uniqueConstraints = [
+            UniqueConstraint(
+                    columnNames = ["email"]
+            )
+        ]
 )
 class Customer {
     @Id

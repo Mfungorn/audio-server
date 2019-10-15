@@ -32,10 +32,22 @@ class GenreController {
     @Autowired
     private lateinit var genreRepository: GenreRepository
 
+    @GetMapping
+    fun getGenres(): List<Genre> {
+        log.info("attempt to get all genres")
+        return genreRepository.findAll()
+    }
+
     @GetMapping("/{name}")
     fun getGenre(@PathVariable name: String): Genre {
         log.info("get genre with name: $name")
         return genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
+    }
+
+    @GetMapping
+    fun findGenre(@RequestParam q: String): Set<Genre> {
+        log.info("attempt to get genres by query $q")
+        return genreRepository.findAllByNameStartsWith(q)
     }
 
     @GetMapping("/{name}/authors")

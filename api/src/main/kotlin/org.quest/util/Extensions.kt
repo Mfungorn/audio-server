@@ -14,10 +14,10 @@ fun Album.mapToAlbumPayload() = AlbumPayload(
         title = this.title,
         cover = this.cover,
         rating = this.rating,
-        price = this.price,
+        price = this.compositions.sumBy { it.price },
         tracksCount = this.compositions.size,
-        authorName = this.authors.first().name,
-        genre = this.genres.first().name
+        authorName = if (this.authors.isEmpty()) "" else this.authors.first().name,
+        genre = if (this.genres.isEmpty()) "" else this.genres.first().name
 )
 
 fun List<Composition>.mapToCompositionPayloadList() = this.mapTo(ArrayList()) {
@@ -32,6 +32,6 @@ fun Composition.mapToCompositionPayload() = CompositionPayload(
         text = this.text,
         price = this.price,
         cover = this.cover,
-        authorName = this.authors.first().name,
-        genre = this.genres.first().name
+        authorName = if (this.authors.isEmpty()) "" else this.authors.first().name,
+        genre = if (this.genres.isEmpty()) "" else this.genres.first().name
 )
