@@ -52,7 +52,7 @@ class CompositionController {
         return composition.mapToCompositionPayload()
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getCompositions(): List<Composition> {
         log.info("attempt to get compositions")
         return compositionRepository.findAll()
@@ -96,7 +96,7 @@ class CompositionController {
         return composition.genres
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
     fun createComposition(@RequestBody postPayload: CompositionPostPayload): ResponseEntity<CompositionPayload> {
         log.info("attempt to create composition with title: ${postPayload.title}")
@@ -112,7 +112,7 @@ class CompositionController {
         return ResponseEntity.ok(result)
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/authors")
     fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<String> {
         log.info("attempt to add to composition $id author with name: $authorName")
@@ -126,7 +126,7 @@ class CompositionController {
         return ResponseEntity.ok("Author added to composition")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/albums")
     fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<String> {
         log.info("attempt to add to composition $id album with title: $albumTitle")
@@ -140,7 +140,7 @@ class CompositionController {
         return ResponseEntity.ok("Album added to composition")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/genres")
     fun addGenre(@PathVariable id: Long, @RequestBody genreName: String): ResponseEntity<String> {
         log.info("attempt to add genre: $genreName to composition $id")
@@ -154,7 +154,7 @@ class CompositionController {
         return ResponseEntity.ok("Genre added to composition")
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @PatchMapping("/{id}/favorite")
     fun addToFavorite(
             @RequestHeader(value = "Authorization") authorization: String,
@@ -174,12 +174,13 @@ class CompositionController {
                 .orElseThrow { ResourceNotFoundException("Composition", "id", id) }
         log.info("find composition - ${composition.title}")
         composition.addCustomer(customer)
+        composition.rating++
         customerRepository.save(customer)
         compositionRepository.save(composition)
         return ResponseEntity.ok("Composition added to favorite")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     fun deleteComposition(@PathVariable id: Long): ResponseEntity<Long> {
         val composition = compositionRepository.findById(id).orElseThrow {

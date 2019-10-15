@@ -44,15 +44,15 @@ class AlbumController {
         return ResponseEntity.ok(payload)
     }
 
-    @GetMapping("/{title}")
-    fun getAlbum(@PathVariable title: String): ResponseEntity<AlbumPayload> {
+    @GetMapping
+    fun getAlbum(@RequestParam title: String): ResponseEntity<AlbumPayload> {
         log.info("attempt to get album with title: $title")
         val album = albumRepository.findByTitle(title).orElseThrow { ResourceNotFoundException("Album", "title", title) }
         val payload = album.mapToAlbumPayload()
         return ResponseEntity.ok(payload)
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getAlbums(): List<Album> {
         log.info("attempt to get all albums")
         return albumRepository.findAll()
@@ -93,8 +93,8 @@ class AlbumController {
         return album.genres
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping(consumes = ["text/plain"], produces = ["application/json"])
     fun createAlbumWithTitle(@RequestBody title: String): ResponseEntity<AlbumPayload> {
         log.info("attempt to create album with title: $title")
         val album = Album(title)
@@ -103,7 +103,7 @@ class AlbumController {
         return ResponseEntity.ok(result.mapToAlbumPayload())
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/authors")
     fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<String> {
         log.info("attempt to add to album $id author with name: $authorName")
@@ -117,7 +117,7 @@ class AlbumController {
         return ResponseEntity.ok("Author added to album")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/compositions")
     fun updateCompositions(@PathVariable id: Long, @RequestBody compositionTitle: String): ResponseEntity<String> {
         log.info("attempt to add to album $id composition with title: $compositionTitle")
@@ -132,7 +132,7 @@ class AlbumController {
         return ResponseEntity.ok("Composition added to album")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     fun deleteAlbum(@PathVariable id: Long): ResponseEntity<Long> {
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }

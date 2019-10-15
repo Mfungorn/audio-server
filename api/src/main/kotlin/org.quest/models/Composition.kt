@@ -28,7 +28,7 @@ data class Composition(
     val id: Long? = null
 
     @Column(name = "rating")
-    val rating: Int = 0
+    var rating: Int = 0
 
     //@JsonIgnore
     @JsonIgnoreProperties("compositions")

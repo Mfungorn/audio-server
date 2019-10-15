@@ -32,7 +32,7 @@ class GenreController {
     @Autowired
     private lateinit var genreRepository: GenreRepository
 
-    @GetMapping
+    @GetMapping("/all")
     fun getGenres(): List<Genre> {
         log.info("attempt to get all genres")
         return genreRepository.findAll()
@@ -44,7 +44,7 @@ class GenreController {
         return genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }
     }
 
-    @GetMapping
+    @GetMapping("/search")
     fun findGenre(@RequestParam q: String): Set<Genre> {
         log.info("attempt to get genres by query $q")
         return genreRepository.findAllByNameStartsWith(q)
@@ -77,8 +77,8 @@ class GenreController {
         return result.sortedByDescending { it.rating }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping(consumes = ["text/plain"], produces = ["application/json"])
     fun createGenre(@RequestBody name: String): ResponseEntity<Genre> {
         log.info("attempt to create genre: $name")
         val genre = Genre(name)
@@ -86,7 +86,7 @@ class GenreController {
         return ResponseEntity.ok(result)
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{name}")
     fun deleteGenre(@PathVariable name: String): ResponseEntity<String> {
         val genre = genreRepository.findByName(name).orElseThrow { ResourceNotFoundException("Genre", "name", name) }

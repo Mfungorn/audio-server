@@ -46,7 +46,7 @@ class UserController {
     }
 
     @GetMapping("/user/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     fun getCurrentUser(@CurrentUser userPrincipal: UserPrincipal): Customer {
         log.info("attempt to get customer ${userPrincipal.getId()}")
         return customerRepository.findById(userPrincipal.getId()!!)
@@ -54,7 +54,7 @@ class UserController {
     }
 
     @GetMapping("/admin/me")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     fun getCurrentAdmin(@CurrentUser userPrincipal: UserPrincipal): Manager {
         log.info("attempt to get manager ${userPrincipal.getId()}")
         return managerRepository.findById(userPrincipal.getId()!!)

@@ -46,13 +46,13 @@ class AuthorController {
         return authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
     }
 
-    @GetMapping("/{name}")
-    fun getAuthor(@PathVariable name: String): Author {
+    @GetMapping
+    fun getAuthor(@RequestParam name: String): Author {
         log.info("attempt to get author with name: $name")
         return authorRepository.findByName(name).orElseThrow { ResourceNotFoundException("Author", "name", name) }
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getAuthors(): List<Author> {
         log.info("attempt to get all authors")
         return authorRepository.findAll()
@@ -101,7 +101,7 @@ class AuthorController {
 //        return ResponseEntity.ok(result)
 //    }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
     fun createAuthor(@RequestBody payload: AuthorPostPayload): ResponseEntity<Author> {
         log.info("attempt to create author with name: ${payload.name}")
@@ -114,7 +114,7 @@ class AuthorController {
         return ResponseEntity.ok(result)
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/albums")
     fun updateAlbums(@PathVariable id: Long, @RequestBody albumTitle: String): ResponseEntity<String> {
         log.info("attempt to add to author $id album with title: $albumTitle")
@@ -129,7 +129,7 @@ class AuthorController {
         return ResponseEntity.ok("Album added to author")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/compositions")
     fun updateCompositions(@PathVariable id: Long, @RequestBody compositionTitle: String): ResponseEntity<String> {
         log.info("attempt to  add to author $id composition with title: $compositionTitle")
@@ -144,7 +144,6 @@ class AuthorController {
         return ResponseEntity.ok("Composition added to author")
     }
 
-    @PreAuthorize("hasRole('USER')")
     @PatchMapping("/{id}/favorite")
     fun addToFavorite(
             @RequestHeader(value = "Authorization") authorization: String,
@@ -163,12 +162,13 @@ class AuthorController {
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
         log.info("find author - ${author.name}")
         author.addCustomer(customer)
+        author.rating++
         customerRepository.save(customer)
         authorRepository.save(author)
         return ResponseEntity.ok("Author added to favorite")
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     fun deleteAuthor(@PathVariable id: Long): ResponseEntity<Long> {
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
