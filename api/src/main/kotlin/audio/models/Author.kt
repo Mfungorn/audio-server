@@ -24,6 +24,10 @@ data class Author(
     @Column(name = "rating")
     var rating: Int = 0
 
+    // transient
+    val genres: Set<Genre>
+        get() = compositions.flatMapTo(mutableSetOf()) { it.genres }
+
     //@JsonIgnore
     @JsonIgnoreProperties("authors")
     @Column(name = "albums")
