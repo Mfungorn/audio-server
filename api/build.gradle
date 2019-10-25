@@ -23,6 +23,7 @@ allOpen {
     annotation("javax.persistence.Entity")
 }
 
+java.sourceCompatibility = JavaVersion.VERSION_1_8
 version '1.0'
 
 repositories {
