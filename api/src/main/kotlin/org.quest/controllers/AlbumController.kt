@@ -9,7 +9,6 @@ import org.quest.payload.AlbumPayload
 import org.quest.repositories.AlbumRepository
 import org.quest.repositories.AuthorRepository
 import org.quest.repositories.CompositionRepository
-import org.quest.repositories.GenreRepository
 import org.quest.util.mapToAlbumPayload
 import org.quest.util.mapToAlbumPayloadList
 import org.slf4j.LoggerFactory
@@ -32,9 +31,6 @@ class AlbumController {
 
     @Autowired
     private lateinit var compositionRepository: CompositionRepository
-
-    @Autowired
-    private lateinit var genreRepository: GenreRepository
 
     @GetMapping("/{id}")
     fun getAlbum(@PathVariable id: Long): ResponseEntity<AlbumPayload> {
@@ -90,7 +86,7 @@ class AlbumController {
     fun getAlbumGenres(@PathVariable id: Long): Set<Genre> {
         log.info("attempt to get genres of album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
-        return album.genres
+        return album.compositions.flatMapTo(mutableSetOf()) { composition -> composition.genres }
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -127,8 +123,7 @@ class AlbumController {
         album.addComposition(composition)
         compositionRepository.save(composition)
         log.info("$compositionTitle added successfully, attempt to update genres")
-        val result = updateAlbumGenresFromComposition(album, composition)
-        albumRepository.save(result)
+        albumRepository.save(album)
         return ResponseEntity.ok("Composition added to album")
     }
 
@@ -139,14 +134,5 @@ class AlbumController {
         log.info("attempt to delete album ${album.title}")
         albumRepository.delete(album)
         return ResponseEntity.ok(id)
-    }
-
-    private fun updateAlbumGenresFromComposition(album: Album, composition: Composition): Album {
-        album.genres += composition.genres
-        val difference = composition.genres - album.genres
-        log.info("${difference.size} genres are different")
-        difference.forEach { it.albums.add(album) }
-        genreRepository.saveAll(difference)
-        return album
     }
 }

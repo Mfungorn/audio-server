@@ -26,30 +26,4 @@ data class Genre(
             joinColumns = [JoinColumn(name = "genre_id")],
             inverseJoinColumns = [JoinColumn(name = "composition_id")])
     val compositions: MutableSet<Composition> = mutableSetOf()
-
-    //@JsonIgnore
-    @JsonIgnoreProperties("genres")
-    @Column(name = "authors")
-    @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    ])
-    @JoinTable(
-            name = "genre_author",
-            joinColumns = [JoinColumn(name = "genre_id")],
-            inverseJoinColumns = [JoinColumn(name = "author_id")])
-    val authors: MutableSet<Author> = mutableSetOf()
-
-    //@JsonIgnore
-    @JsonIgnoreProperties("genres")
-    @Column(name = "albums")
-    @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    ])
-    @JoinTable(
-            name = "genre_album",
-            joinColumns = [JoinColumn(name = "genre_id")],
-            inverseJoinColumns = [JoinColumn(name = "album_id")])
-    val albums: MutableSet<Album> = mutableSetOf()
 }

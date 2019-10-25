@@ -43,12 +43,6 @@ data class Author(
             inverseJoinColumns = [JoinColumn(name = "composition_id")])
     val compositions: MutableSet<Composition> = mutableSetOf()
 
-    //@JsonIgnore
-    @JsonIgnoreProperties("authors")
-    @Column(name = "genres")
-    @ManyToMany(mappedBy = "authors")
-    val genres: MutableSet<Genre> = mutableSetOf()
-
     @JsonIgnore
     @Column(name = "customers")
     @ManyToMany(mappedBy = "favoriteAuthors")

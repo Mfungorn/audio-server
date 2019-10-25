@@ -1,12 +1,14 @@
 package org.quest.controllers
 
 import org.quest.exception.ResourceNotFoundException
-import org.quest.models.Album
 import org.quest.models.Author
 import org.quest.models.Composition
 import org.quest.models.Genre
 import org.quest.payload.AlbumPayload
-import org.quest.repositories.*
+import org.quest.repositories.AlbumRepository
+import org.quest.repositories.AuthorRepository
+import org.quest.repositories.CompositionRepository
+import org.quest.repositories.CustomerRepository
 import org.quest.security.TokenProvider
 import org.quest.util.mapToAlbumPayloadList
 import org.slf4j.LoggerFactory
@@ -30,9 +32,6 @@ class AuthorController {
 
     @Autowired
     private lateinit var compositionRepository: CompositionRepository
-
-    @Autowired
-    private lateinit var genreRepository: GenreRepository
 
     @Autowired
     private lateinit var customerRepository: CustomerRepository
@@ -88,7 +87,7 @@ class AuthorController {
     fun getAuthorGenres(@PathVariable id: Long): Set<Genre> {
         log.info("attempt to get genres of author with id: $id")
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
-        return author.genres
+        return author.compositions.flatMapTo(mutableSetOf()) { it.genres }
     }
 
 //    @PreAuthorize("hasRole('ADMIN')")
@@ -124,8 +123,7 @@ class AuthorController {
         author.addAlbum(album)
         albumRepository.save(album)
         log.info("$albumTitle added successfully, attempt to update genres")
-        val result = updateAuthorGenresFromAlbum(author, album)
-        authorRepository.save(result)
+        authorRepository.save(author)
         return ResponseEntity.ok("Album added to author")
     }
 
@@ -139,8 +137,7 @@ class AuthorController {
         author.addComposition(composition)
         compositionRepository.save(composition)
         log.info("$compositionTitle added successfully, attempt to update genres")
-        val result = updateAuthorGenresFromComposition(author, composition)
-        authorRepository.save(result)
+        authorRepository.save(author)
         return ResponseEntity.ok("Composition added to author")
     }
 
@@ -175,23 +172,5 @@ class AuthorController {
         log.info("attempt to delete author ${author.name}")
         authorRepository.delete(author)
         return ResponseEntity.ok(id)
-    }
-
-    private fun updateAuthorGenresFromAlbum(author: Author, album: Album): Author {
-        author.genres += album.genres
-        val difference = album.genres - author.genres
-        log.info("${difference.size} genres are different")
-        difference.forEach { it.authors.add(author) }
-        genreRepository.saveAll(difference)
-        return author
-    }
-
-    private fun updateAuthorGenresFromComposition(author: Author, composition: Composition): Author {
-        author.genres += composition.genres
-        val difference = composition.genres - author.genres
-        log.info("${difference.size} genres are different")
-        difference.forEach { it.authors.add(author) }
-        genreRepository.saveAll(difference)
-        return author
     }
 }

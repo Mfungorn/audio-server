@@ -42,11 +42,9 @@ data class Album(
     @ManyToMany(mappedBy = "albums")
     val compositions: MutableSet<Composition> = mutableSetOf()
 
-    //@JsonIgnore
-    @JsonIgnoreProperties("albums")
-    @Column(name = "genres")
-    @ManyToMany(mappedBy = "albums")
-    val genres: MutableSet<Genre> = mutableSetOf()
+    // transient
+    val genres: Set<Genre>
+        get() = compositions.flatMapTo(mutableSetOf()) { it.genres }
 
     fun addAuthor(author: Author) {
         authors.add(author)
