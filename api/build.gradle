@@ -1,3 +1,5 @@
+import audio.ApplicationKt
+
 plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.3.11'
     id 'org.springframework.boot' version '2.1.3.RELEASE'
@@ -16,7 +18,9 @@ allOpen {
     annotation("javax.persistence.Entity")
 }
 
-version '1.0-SNAPSHOT'
+mainClassName = ApplicationKt
+
+version '1.0'
 
 repositories {
     mavenCentral()
