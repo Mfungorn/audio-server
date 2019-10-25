@@ -1,21 +1,29 @@
 package audio.models
 
+import audio.repositories.AlbumEntityResolver
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
 
 @Entity
 @Table(name = "album")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator::class,
+        property = "id",
+        scope = Album::class,
+        resolver = AlbumEntityResolver::class)
 data class Album(
         @Column(name = "title")
-        val title: String
+        val title: String,
+
+        @Column(name = "cover")
+        var cover: String = ""
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "album_id")
     val id: Long? = null
-
-    @Column(name = "cover")
-    var cover: String = ""
 
     @Column(name = "rating")
     val rating: Int = 0

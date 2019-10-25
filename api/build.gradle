@@ -23,6 +23,7 @@ allOpen {
     annotation("javax.persistence.Entity")
 }
 
+group = "audio"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 version '1.0'
 

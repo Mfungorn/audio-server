@@ -1,25 +1,34 @@
 package audio.models
 
+import audio.repositories.AuthorEntityResolver
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
+
 
 @Entity
 @Table(name = "author")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator::class,
+        property = "id",
+        scope = Author::class,
+        resolver = AuthorEntityResolver::class)
 data class Author(
         @Column(name = "name")
         var name: String,
 
         @Column(name = "bio")
-        var bio: String = "No bio"
+        var bio: String = "No bio",
+
+        @Column(name = "logo")
+        var logo: String = ""
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "author_id")
     val id: Long? = null
-
-    @Column(name = "logo")
-    var logo: String = ""
 
     @Column(name = "rating")
     var rating: Int = 0

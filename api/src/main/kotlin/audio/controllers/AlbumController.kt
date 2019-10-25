@@ -6,6 +6,7 @@ import audio.models.Author
 import audio.models.Composition
 import audio.models.Genre
 import audio.payload.AlbumPayload
+import audio.payload.AlbumPostPayload
 import audio.repositories.AlbumRepository
 import audio.repositories.AuthorRepository
 import audio.repositories.CompositionRepository
@@ -90,13 +91,24 @@ class AlbumController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PostMapping(consumes = ["text/plain"], produces = ["application/json"])
-    fun createAlbumWithTitle(@RequestBody title: String): ResponseEntity<AlbumPayload> {
-        log.info("attempt to create album with title: $title")
-        val album = Album(title)
+    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+    fun createAlbum(@RequestBody payload: AlbumPostPayload): ResponseEntity<AlbumPayload> {
+        log.info("attempt to create album with title: ${payload.title}")
+        val album = Album(
+                payload.title,
+                payload.cover
+        )
         val result = albumRepository.save(album)
         log.info("created album id: ${result.id}")
         return ResponseEntity.ok(result.mapToAlbumPayload())
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    fun putComposition(@PathVariable id: Long, @RequestBody changes: Album): ResponseEntity<String> {
+        log.info("attempt to put album $id")
+        albumRepository.save(changes)
+        return ResponseEntity.ok("Album updated successfully")
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

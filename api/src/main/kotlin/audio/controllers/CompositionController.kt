@@ -116,6 +116,14 @@ class CompositionController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    fun putComposition(@PathVariable id: Long, @RequestBody changes: Composition): ResponseEntity<String> {
+        log.info("attempt to put composition $id")
+        compositionRepository.save(changes)
+        return ResponseEntity.ok("Composition updated successfully")
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/authors")
     fun updateAuthors(@PathVariable id: Long, @RequestBody authorName: String): ResponseEntity<String> {
         log.info("attempt to add to composition $id author with name: $authorName")

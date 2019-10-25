@@ -1,10 +1,18 @@
 package audio.models
 
+import audio.repositories.GenreEntityResolver
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
 
 @Entity
 @Table(name = "genre")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator::class,
+        property = "id",
+        scope = Genre::class,
+        resolver = GenreEntityResolver::class)
 data class Genre(
     @Column(name = "name", unique = true)
     val name: String

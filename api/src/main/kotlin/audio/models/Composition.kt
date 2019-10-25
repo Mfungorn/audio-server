@@ -1,11 +1,19 @@
 package audio.models
 
+import audio.repositories.CompositionEntityResolver
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
 
 @Entity
 @Table(name = "composition")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator::class,
+        property = "id",
+        scope = Composition::class,
+        resolver = CompositionEntityResolver::class)
 data class Composition(
     @Column(name = "title")
     val title: String,

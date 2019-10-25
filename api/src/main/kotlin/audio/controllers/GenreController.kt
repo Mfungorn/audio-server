@@ -3,6 +3,7 @@ package audio.controllers
 import audio.exception.ResourceNotFoundException
 import audio.models.Composition
 import audio.models.Genre
+import audio.payload.GenrePostPayload
 import audio.repositories.AlbumRepository
 import audio.repositories.AuthorRepository
 import audio.repositories.CompositionRepository
@@ -76,10 +77,10 @@ class GenreController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PostMapping(consumes = ["text/plain"], produces = ["application/json"])
-    fun createGenre(@RequestBody name: String): ResponseEntity<Genre> {
-        log.info("attempt to create genre: $name")
-        val genre = Genre(name)
+    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
+    fun createGenre(@RequestBody payload: GenrePostPayload): ResponseEntity<Genre> {
+        log.info("attempt to create genre: ${payload.name}")
+        val genre = Genre(payload.name)
         val result = genreRepository.save(genre)
         return ResponseEntity.ok(result)
     }

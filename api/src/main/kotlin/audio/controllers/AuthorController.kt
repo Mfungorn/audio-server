@@ -5,6 +5,7 @@ import audio.models.Author
 import audio.models.Composition
 import audio.models.Genre
 import audio.payload.AlbumPayload
+import audio.payload.AuthorPostPayload
 import audio.repositories.AlbumRepository
 import audio.repositories.AuthorRepository
 import audio.repositories.CompositionRepository
@@ -90,27 +91,26 @@ class AuthorController {
         return author.compositions.flatMapTo(mutableSetOf()) { it.genres }
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PostMapping(consumes = ["application/json"], produces = ["application/json"])
-//    fun createAuthorWithName(@RequestBody authorName: String): ResponseEntity<Author> {
-//        log.info("attempt to create author with name: $authorName")
-//        val author = Author(authorName)
-//        val result = authorRepository.save(author)
-//        log.info("created author id: ${result.id}")
-//        return ResponseEntity.ok(result)
-//    }
-
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping(consumes = ["application/json"], produces = ["application/json"])
     fun createAuthor(@RequestBody payload: AuthorPostPayload): ResponseEntity<Author> {
         log.info("attempt to create author with name: ${payload.name}")
         val author = Author(
                 payload.name,
-                payload.bio
+                payload.bio,
+                payload.logo
         )
         val result = authorRepository.save(author)
         log.info("created author id: ${result.id}")
         return ResponseEntity.ok(result)
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    fun putAuthor(@PathVariable id: Long, @RequestBody changes: Author): ResponseEntity<String> {
+        log.info("attempt to put author $id")
+        authorRepository.save(changes)
+        return ResponseEntity.ok("Author updated successfully")
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
