@@ -14,36 +14,35 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class CustomUserDetailsService: UserDetailsService {
     @Autowired
-    var customerRepository: CustomerRepository? = null
+    lateinit var customerRepository: CustomerRepository
 
     @Autowired
-    var managerRepository: ManagerRepository? = null
+    lateinit var managerRepository: ManagerRepository
 
     @Transactional
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(email: String): UserDetails {
-        val customer = customerRepository!!.findByEmail(email)
-        return if (customer.isPresent) {
-            UserPrincipal.create(customer.get())
-        } else {
-            val manager = managerRepository!!.findByEmail(email)
-                    .orElseThrow { UsernameNotFoundException("User not found with email : $email") }
-            UserPrincipal.create(manager)
+        var principal: UserPrincipal? = null
+        customerRepository.findByEmail(email).ifPresent {
+            principal = UserPrincipal.create(it)
         }
-                //.orElseThrow { UsernameNotFoundException("User not found with email : $email") }
+        managerRepository.findByEmail(email).ifPresent {
+            principal = UserPrincipal.create(it)
+        }
+        return principal ?: throw UsernameNotFoundException("User not found with email : $email")
+        //.orElseThrow { UsernameNotFoundException("User not found with email : $email") }
     }
 
     @Transactional
-    fun loadUserById(id: Long?): UserDetails {
-        val customer = customerRepository!!.findById(id)
-        return if (customer.isPresent) {
-            UserPrincipal.create(customer.get())
-        } else {
-            val manager = managerRepository!!.findById(id).orElseThrow<RuntimeException> {
-                ResourceNotFoundException("User", "id", id as Any)
-            }
-            UserPrincipal.create(manager)
+    fun loadUserById(id: Long): UserDetails {
+        var principal: UserPrincipal? = null
+        customerRepository.findById(id).ifPresent {
+            principal = UserPrincipal.create(it)
         }
+        managerRepository.findById(id).ifPresent {
+            principal = UserPrincipal.create(it)
+        }
+        return principal ?: throw ResourceNotFoundException("User", "id", id as Any)
 
         // return UserPrincipal.create(user)
     }

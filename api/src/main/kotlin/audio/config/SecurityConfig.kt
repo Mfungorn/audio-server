@@ -34,10 +34,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig:  WebSecurityConfigurerAdapter() {
 
     @Autowired
-    private val customUserDetailsService: CustomUserDetailsService? = null
+    private lateinit var customUserDetailsService: CustomUserDetailsService
 
     @Autowired
-    private val customOAuth2UserService: CustomOAuth2UserService? = null
+    private lateinit var customOAuth2UserService: CustomOAuth2UserService
 
     @Autowired
     private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler? = null
@@ -64,8 +64,8 @@ class SecurityConfig:  WebSecurityConfigurerAdapter() {
     }
 
     @Throws(Exception::class)
-    public override fun configure(authenticationManagerBuilder: AuthenticationManagerBuilder?) {
-        authenticationManagerBuilder!!
+    public override fun configure(authenticationManagerBuilder: AuthenticationManagerBuilder) {
+        authenticationManagerBuilder
                 .userDetailsService<UserDetailsService>(customUserDetailsService)
                 .passwordEncoder(passwordEncoder())
     }

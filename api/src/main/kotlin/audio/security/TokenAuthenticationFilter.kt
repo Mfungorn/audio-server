@@ -27,7 +27,7 @@ class TokenAuthenticationFilter: OncePerRequestFilter() {
             val jwt = getJwtFromRequest(request)
 
             if (StringUtils.hasText(jwt) && tokenProvider!!.validateToken(jwt!!)) {
-                val userId = tokenProvider.getUserIdFromToken(jwt)
+                val userId = tokenProvider.getUserIdFromToken(jwt)!!
 
                 val userDetails = customUserDetailsService!!.loadUserById(userId)
                 val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
