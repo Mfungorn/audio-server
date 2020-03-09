@@ -96,6 +96,7 @@ bootJar {
         attributes 'Start-Class': 'audio.ApplicationKt'
     }
 }
+[shadowJar, shadowDistTar, shadowDistZip, startShadowScripts, distTar, distZip]*.enabled = false
 //shadowJar {
 //    baseName = "audio-server"
 //    classifier = null
