@@ -28,15 +28,15 @@ data class Album(
     @Column(name = "rating")
     val rating: Int = 0
 
-    @Column(name = "price")
-    var price: Int = 0
+    val price: Int
+        get() = compositions.sumBy { it.price }
 
     //@JsonIgnore
-    @JsonIgnoreProperties("albums")
+    @JsonIgnoreProperties("albums", "compositions", "genres")
     @Column(name = "authors")
     @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
+        CascadeType.MERGE,
+        CascadeType.REFRESH
     ])
     @JoinTable(
             name = "album_author",
@@ -45,7 +45,7 @@ data class Album(
     val authors: MutableSet<Author> = mutableSetOf()
 
     //@JsonIgnore
-    @JsonIgnoreProperties("albums")
+    @JsonIgnoreProperties("albums", "authors", "genres")
     @Column(name = "compositions")
     @ManyToMany(mappedBy = "albums")
     val compositions: MutableSet<Composition> = mutableSetOf()
@@ -62,5 +62,9 @@ data class Album(
     fun addComposition(composition: Composition) {
         compositions.add(composition)
         composition.albums.add(this)
+    }
+
+    override fun toString(): String {
+        return "Album $title"
     }
 }

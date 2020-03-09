@@ -38,22 +38,26 @@ data class Author(
         get() = compositions.flatMapTo(mutableSetOf()) { it.genres }
 
     //@JsonIgnore
-    @JsonIgnoreProperties("authors")
+    @JsonIgnoreProperties("authors", "compositions", "genres")
     @Column(name = "albums")
     @ManyToMany(mappedBy = "authors")
     val albums: MutableSet<Album> = mutableSetOf()
 
     //@JsonIgnore
-    @JsonIgnoreProperties("authors")
+//    @JsonIgnoreProperties("authors")
+//    @Column(name = "compositions")
+//    @ManyToMany(cascade = [
+//        CascadeType.PERSIST,
+//        CascadeType.MERGE
+//    ])
+//    @JoinTable(
+//            name = "author_composition",
+//            joinColumns = [JoinColumn(name = "author_id")],
+//            inverseJoinColumns = [JoinColumn(name = "composition_id")])
+//    val compositions: MutableSet<Composition> = mutableSetOf()
+    @JsonIgnoreProperties("authors", "albums", "genres")
     @Column(name = "compositions")
-    @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    ])
-    @JoinTable(
-            name = "author_composition",
-            joinColumns = [JoinColumn(name = "author_id")],
-            inverseJoinColumns = [JoinColumn(name = "composition_id")])
+    @ManyToMany(mappedBy = "authors")
     val compositions: MutableSet<Composition> = mutableSetOf()
 
     @JsonIgnore
@@ -74,5 +78,9 @@ data class Author(
     fun addCustomer(customer: Customer) {
         customers.add(customer)
         customer.favoriteAuthors.add(this)
+    }
+
+    override fun toString(): String {
+        return "Author $name"
     }
 }

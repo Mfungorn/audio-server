@@ -15,20 +15,20 @@ import javax.persistence.*
         scope = Composition::class,
         resolver = CompositionEntityResolver::class)
 data class Composition(
-    @Column(name = "title")
-    val title: String,
+        @Column(name = "title")
+        val title: String,
 
-    @Column(name = "duration")
-    val duration: Int,
+        @Column(name = "duration")
+        val duration: Int,
 
-    @Column(name = "text")
-    val text: String,
+        @Column(name = "text")
+        val text: String,
 
-    @Column(name = "price")
-    val price: Int,
+        @Column(name = "price")
+        val price: Int,
 
-    @Column(name = "cover")
-    val cover: String = ""
+        @Column(name = "cover")
+        val cover: String = ""
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,11 +39,11 @@ data class Composition(
     var rating: Int = 0
 
     //@JsonIgnore
-    @JsonIgnoreProperties("compositions")
+    @JsonIgnoreProperties("compositions", "authors", "genres")
     @Column(name = "albums")
     @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
+        CascadeType.MERGE,
+        CascadeType.REFRESH
     ])
     @JoinTable(
             name = "composition_album",
@@ -51,16 +51,34 @@ data class Composition(
             inverseJoinColumns = [JoinColumn(name = "album_id")])
     val albums: MutableSet<Album> = mutableSetOf()
 
-//    @JsonIgnore
-    @JsonIgnoreProperties("compositions")
+    //    @JsonIgnore
+//    @JsonIgnoreProperties("compositions")
+//    @Column(name = "authors")
+//    @ManyToMany(mappedBy = "compositions")
+//    val authors: MutableSet<Author> = mutableSetOf()
+    @JsonIgnoreProperties("compositions", "albums", "genres")
     @Column(name = "authors")
-    @ManyToMany(mappedBy = "compositions")
+    @ManyToMany(cascade = [
+        CascadeType.MERGE,
+        CascadeType.REFRESH
+    ])
+    @JoinTable(
+            name = "composition_author",
+            joinColumns = [JoinColumn(name = "composition_id")],
+            inverseJoinColumns = [JoinColumn(name = "author_id")])
     val authors: MutableSet<Author> = mutableSetOf()
 
     //@JsonIgnore
-    @JsonIgnoreProperties("compositions")
+    @JsonIgnoreProperties("compositions", "authors", "albums")
     @Column(name = "genres")
-    @ManyToMany(mappedBy = "compositions")
+    @ManyToMany(cascade = [
+        CascadeType.MERGE,
+        CascadeType.REFRESH
+    ])
+    @JoinTable(
+            name = "composition_genre",
+            joinColumns = [JoinColumn(name = "composition_id")],
+            inverseJoinColumns = [JoinColumn(name = "genre_id")])
     val genres: MutableSet<Genre> = mutableSetOf()
 
     @JsonIgnore
@@ -86,5 +104,9 @@ data class Composition(
     fun addCustomer(customer: Customer) {
         customers.add(customer)
         customer.favoriteCompositions.add(this)
+    }
+
+    override fun toString(): String {
+        return "Track $title"
     }
 }

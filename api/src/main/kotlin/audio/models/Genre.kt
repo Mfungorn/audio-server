@@ -23,15 +23,23 @@ data class Genre(
     val id: Long? = null
 
     //@JsonIgnore
-    @JsonIgnoreProperties("genres")
+//    @JsonIgnoreProperties("genres")
+//    @Column(name = "compositions")
+//    @ManyToMany(cascade = [
+//        CascadeType.PERSIST,
+//        CascadeType.MERGE
+//    ])
+//    @JoinTable(
+//            name = "genre_composition",
+//            joinColumns = [JoinColumn(name = "genre_id")],
+//            inverseJoinColumns = [JoinColumn(name = "composition_id")])
+//    val compositions: MutableSet<Composition> = mutableSetOf()
+    @JsonIgnoreProperties("genres", "authors", "albums")
     @Column(name = "compositions")
-    @ManyToMany(cascade = [
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    ])
-    @JoinTable(
-            name = "genre_composition",
-            joinColumns = [JoinColumn(name = "genre_id")],
-            inverseJoinColumns = [JoinColumn(name = "composition_id")])
+    @ManyToMany(mappedBy = "genres")
     val compositions: MutableSet<Composition> = mutableSetOf()
+
+    override fun toString(): String {
+        return name
+    }
 }
