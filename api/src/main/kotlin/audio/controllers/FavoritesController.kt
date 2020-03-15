@@ -61,12 +61,8 @@ class FavoritesController {
 
     private fun getCustomerFromToken(authorization: String): Customer {
         log.info("attempt to find customer")
-        val token = if (authorization.startsWith("Bearer ")) {
-            authorization.substring(7, authorization.length)
-        } else {
-            throw BadCredentialsException("Invalid token")
-        }
-        val customerId = tokenProvider.getUserIdFromToken(token) ?: throw BadCredentialsException("Invalid token")
+        val customerId = tokenProvider.getUserIdFromAuthHeader(authorization)
+                ?: throw BadCredentialsException("Invalid token")
         val customer = customerRepository.findById(customerId)
                 .orElseThrow { ResourceNotFoundException("User", "id", customerId) }
         log.info("find customer - ${customer.name}")

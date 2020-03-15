@@ -10,6 +10,7 @@ import audio.payload.SignUpRequest
 import audio.repositories.CustomerRepository
 import audio.repositories.ManagerRepository
 import audio.security.TokenProvider
+import io.jsonwebtoken.ExpiredJwtException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -17,10 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import javax.validation.Valid
 
@@ -44,6 +42,23 @@ class AuthController {
 
     @Autowired
     private lateinit var tokenProvider: TokenProvider
+
+    @GetMapping("/check")
+    fun checkAuthorization(
+            @RequestHeader(value = "Authorization") authorization: String
+    ): ResponseEntity<*> {
+        log.info("attempt to check authorization")
+        return try {
+            val token = tokenProvider.subtractToken(authorization)
+            log.info("token claims: id=${tokenProvider.getUserIdFromToken(token)}; email=${tokenProvider.getUserEmailFromToken(token)}")
+            if (tokenProvider.validateToken(token))
+                ResponseEntity.ok("Validation succeeded")
+            else
+                ResponseEntity.badRequest().body("Validation failed")
+        } catch (e: ExpiredJwtException) {
+            return ResponseEntity.badRequest().body("Token expired")
+        }
+    }
 
     @PostMapping("/login")
     fun authenticateCustomer(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<*> {
