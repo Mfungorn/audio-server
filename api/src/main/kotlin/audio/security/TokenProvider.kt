@@ -26,8 +26,12 @@ class TokenProvider(
         val expiryDate = Date(now.time + appProperties.auth.tokenExpirationMsec)
 
         return Jwts.builder()
-                .setId((userPrincipal.getId()!!).toString())
-                .setIssuer(userPrincipal.getEmail())
+                .setClaims(
+                        mapOf(
+                                "id" to userPrincipal.getId(),
+                                "email" to userPrincipal.getEmail()
+                        )
+                )
                 .setIssuedAt(Date())
                 .setExpiration(expiryDate)
                 .signWith(io.jsonwebtoken.SignatureAlgorithm.HS512, appProperties.auth.tokenSecret)
