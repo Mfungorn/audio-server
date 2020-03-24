@@ -44,7 +44,7 @@ class TokenProvider(
                 .parseClaimsJws(token)
                 .body
 
-        return java.lang.Long.parseLong(claims.id)
+        return (claims["id"] as Int).toLong()
     }
 
     fun getUserIdFromAuthHeader(authorization: String): Long? {
