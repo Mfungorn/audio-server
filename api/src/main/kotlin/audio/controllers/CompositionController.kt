@@ -52,6 +52,7 @@ class CompositionController {
         return composition.mapToCompositionPayload()
     }
 
+    @Deprecated("-", ReplaceWith("getPopularCompositions()"))
     @GetMapping("/all")
     fun getCompositions(): List<Composition> {
         log.info("attempt to get compositions")

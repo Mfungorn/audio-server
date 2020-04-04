@@ -13,6 +13,7 @@ fun Album.mapToAlbumPayload() = AlbumPayload(
         id = this.id,
         title = this.title,
         cover = this.cover,
+        year = this.year,
         rating = this.rating,
         price = this.compositions.sumBy { it.price },
         tracksCount = this.compositions.size,

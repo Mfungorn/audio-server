@@ -42,8 +42,8 @@ class StartupData : ApplicationRunner {
         managerRepository.save(manager)
 
         val albums = listOf(
-                Album("Reroute to Remain"),
-                Album("Metallica", "https://www.1c-interes.ru/upload/resize_src/0d/0d9a3b1e052d80f11ff4a6e7d1befe03.jpg")
+                Album("Reroute to Remain", year = 2002),
+                Album("Metallica", "https://www.1c-interes.ru/upload/resize_src/0d/0d9a3b1e052d80f11ff4a6e7d1befe03.jpg", year = 1991)
         )
         val authors = listOf(
                 Author("In Flames", "In Flames is a Swedish metal band from Gothenburg, formed in 1990. The band’s earlier work is considered to be a major influence on the melodic death metal music genre...", "https://files.gamebanana.com/img/ico/sprays/flames.png").apply { addAlbum(albums[0]) },

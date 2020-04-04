@@ -18,7 +18,10 @@ data class Album(
         val title: String,
 
         @Column(name = "cover")
-        var cover: String = ""
+        var cover: String = "",
+
+        @Column(name = "year")
+        val year: Int? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +30,7 @@ data class Album(
 
     @Column(name = "rating")
     val rating: Int = 0
+
 
     val price: Int
         get() = compositions.sumBy { it.price }

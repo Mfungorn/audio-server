@@ -49,6 +49,7 @@ class AlbumController {
         return ResponseEntity.ok(payload)
     }
 
+    @Deprecated("-", ReplaceWith("getPopularAlbums()"))
     @GetMapping("/all")
     fun getAlbums(): List<Album> {
         log.info("attempt to get all albums")
