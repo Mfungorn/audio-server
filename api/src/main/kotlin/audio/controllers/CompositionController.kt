@@ -9,9 +9,9 @@ import audio.payload.CompositionPayload
 import audio.payload.CompositionPostPayload
 import audio.repositories.*
 import audio.security.TokenProvider
-import audio.util.mapToAlbumPayloadList
-import audio.util.mapToCompositionPayload
-import audio.util.mapToCompositionPayloadList
+import audio.util.toAlbumsPayload
+import audio.util.toCompositionPayload
+import audio.util.toCompositionsPayload
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -49,7 +49,7 @@ class CompositionController {
         val composition = compositionRepository
                 .findById(id)
                 .orElseThrow { ResourceNotFoundException("Composition", "id", id) }
-        return composition.mapToCompositionPayload()
+        return composition.toCompositionPayload()
     }
 
     @Deprecated("-", ReplaceWith("getPopularCompositions()"))
@@ -63,14 +63,14 @@ class CompositionController {
     fun getPopularCompositions(): List<CompositionPayload> {
         log.info("attempt to get popular compositions")
         val result = compositionRepository.findByOrderByRatingDesc()
-        return result.mapToCompositionPayloadList()
+        return result.toCompositionsPayload()
     }
 
     @GetMapping("/search")
     fun findComposition(@RequestParam q: String): List<CompositionPayload> {
         log.info("attempt to find composition by title stars with $q")
         val result = compositionRepository.findAllByTitleStartsWith(q)
-        return result.mapToCompositionPayloadList()
+        return result.toCompositionsPayload()
     }
 
     @GetMapping("/{id}/authors")
@@ -88,7 +88,7 @@ class CompositionController {
         val composition = compositionRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Composition", "id", id)
         }
-        return composition.albums.toList().mapToAlbumPayloadList()
+        return composition.albums.toList().toAlbumsPayload()
     }
 
     @GetMapping("/{id}/genres")
@@ -111,7 +111,7 @@ class CompositionController {
                 postPayload.price,
                 postPayload.cover
         )
-        val result = compositionRepository.save(composition).mapToCompositionPayload()
+        val result = compositionRepository.save(composition).toCompositionPayload()
         log.info("created composition id: ${result.id}")
         return ResponseEntity.ok(result)
     }
@@ -136,7 +136,7 @@ class CompositionController {
         }
         composition.addAuthor(author)
         authorRepository.save(author)
-        val result = compositionRepository.save(composition)
+        compositionRepository.save(composition)
         return ResponseEntity.ok("Author added to composition")
     }
 
@@ -152,7 +152,7 @@ class CompositionController {
         }
         composition.addAlbum(album)
         albumRepository.save(album)
-        val result = compositionRepository.save(composition)
+        compositionRepository.save(composition)
         return ResponseEntity.ok("Album added to composition")
     }
 
@@ -168,7 +168,7 @@ class CompositionController {
         }
         composition.addGenre(genre)
         genreRepository.save(genre)
-        val result = compositionRepository.save(composition)
+        compositionRepository.save(composition)
         return ResponseEntity.ok("Genre added to composition")
     }
 

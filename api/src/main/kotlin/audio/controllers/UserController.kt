@@ -3,11 +3,13 @@ package audio.controllers
 import audio.exception.ResourceNotFoundException
 import audio.models.Customer
 import audio.models.Manager
+import audio.payload.CustomerProfilePayload
 import audio.repositories.CustomerRepository
 import audio.repositories.ManagerRepository
 import audio.security.CurrentUser
 import audio.security.TokenProvider
 import audio.security.UserPrincipal
+import audio.util.toCustomerProfilePayload
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
@@ -32,13 +34,13 @@ class UserController {
     @GetMapping("/user/profile")
     fun getUser(
             @RequestHeader(value = "Authorization") authorization: String
-    ): Customer {
+    ): CustomerProfilePayload {
         val customerId = tokenProvider.getUserIdFromAuthHeader(authorization)
                 ?: throw BadCredentialsException("Invalid token")
         val customer = customerRepository.findById(customerId)
                 .orElseThrow { ResourceNotFoundException("User", "id", customerId) }
         log.info("find customer - ${customer.name}")
-        return customer
+        return customer.toCustomerProfilePayload()
     }
 
     @GetMapping("/user/me")

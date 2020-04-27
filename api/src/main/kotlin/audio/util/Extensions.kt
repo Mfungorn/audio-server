@@ -2,14 +2,16 @@ package audio.util
 
 import audio.models.Album
 import audio.models.Composition
+import audio.models.Customer
 import audio.payload.AlbumPayload
 import audio.payload.CompositionPayload
+import audio.payload.CustomerProfilePayload
 
-fun List<Album>.mapToAlbumPayloadList() = this.mapTo(ArrayList()) {
-    it.mapToAlbumPayload()
+fun List<Album>.toAlbumsPayload() = this.mapTo(ArrayList()) {
+    it.toAlbumPayload()
 }
 
-fun Album.mapToAlbumPayload() = AlbumPayload(
+fun Album.toAlbumPayload() = AlbumPayload(
         id = this.id,
         title = this.title,
         cover = this.cover,
@@ -22,11 +24,11 @@ fun Album.mapToAlbumPayload() = AlbumPayload(
             "" else this.compositions.flatMap { it.genres }.first().name
 )
 
-fun List<Composition>.mapToCompositionPayloadList() = this.mapTo(ArrayList()) {
-    it.mapToCompositionPayload()
+fun List<Composition>.toCompositionsPayload() = this.mapTo(ArrayList()) {
+    it.toCompositionPayload()
 }
 
-fun Composition.mapToCompositionPayload() = CompositionPayload(
+fun Composition.toCompositionPayload() = CompositionPayload(
         id = this.id,
         title = this.title,
         duration = this.duration,
@@ -36,4 +38,8 @@ fun Composition.mapToCompositionPayload() = CompositionPayload(
         cover = this.cover,
         authorName = if (this.authors.isEmpty()) "" else this.authors.first().name,
         genre = if (this.genres.isEmpty()) "" else this.genres.first().name
+)
+
+fun Customer.toCustomerProfilePayload() = CustomerProfilePayload(
+        name, email, phone, balance, favoriteCompositions.toList()
 )

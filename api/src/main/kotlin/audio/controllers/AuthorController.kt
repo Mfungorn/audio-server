@@ -11,7 +11,7 @@ import audio.repositories.AuthorRepository
 import audio.repositories.CompositionRepository
 import audio.repositories.CustomerRepository
 import audio.security.TokenProvider
-import audio.util.mapToAlbumPayloadList
+import audio.util.toAlbumsPayload
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -74,7 +74,7 @@ class AuthorController {
     fun getAuthorAlbums(@PathVariable id: Long): List<AlbumPayload> {
         log.info("attempt to get albums of author with id: $id")
         val author = authorRepository.findById(id).orElseThrow { ResourceNotFoundException("Author", "id", id) }
-        return author.albums.toList().mapToAlbumPayloadList()
+        return author.albums.toList().toAlbumsPayload()
     }
 
     @GetMapping("/{id}/compositions")

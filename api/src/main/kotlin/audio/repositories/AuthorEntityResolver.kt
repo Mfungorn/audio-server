@@ -21,14 +21,14 @@ class AuthorEntityResolver @Autowired constructor(
     override fun resolveId(id: IdKey): Any? {
         var resolved: Any? = super.resolveId(id)
         if (resolved == null) {
-            resolved = _tryToLoadFromSource(id).orElseThrow { ResourceNotFoundException("Author", "id", id.key as Long) }
+            resolved = tryToLoadFromSource(id).orElseThrow { ResourceNotFoundException("Author", "id", id.key as Long) }
             bindItem(id, resolved)
         }
 
         return resolved
     }
 
-    private fun _tryToLoadFromSource(idKey: IdKey): Optional<Author> {
+    private fun tryToLoadFromSource(idKey: IdKey): Optional<Author> {
         requireNonNull(idKey.scope, "global scope does not supported")
 
         val id = idKey.key as Long

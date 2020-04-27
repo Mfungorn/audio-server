@@ -1,16 +1,10 @@
 package audio.security.oauth2.user
 
 
-abstract class OAuth2UserInfo {
-    lateinit var attributes: Map<String, Any>
-
-    constructor(attributes: Map<String, Any>) {
-        this.attributes = attributes;
-    }
-
-    public abstract fun getId(): String;
-
-    public abstract fun getName(): String;
-
-    public abstract fun getEmail(): String;
+abstract class OAuth2UserInfo(
+        var attributes: Map<String, Any>
+) {
+    abstract fun getId(): String
+    abstract fun getName(): String
+    abstract fun getEmail(): String
 }

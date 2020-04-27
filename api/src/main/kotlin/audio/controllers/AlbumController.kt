@@ -10,8 +10,8 @@ import audio.payload.AlbumPostPayload
 import audio.repositories.AlbumRepository
 import audio.repositories.AuthorRepository
 import audio.repositories.CompositionRepository
-import audio.util.mapToAlbumPayload
-import audio.util.mapToAlbumPayloadList
+import audio.util.toAlbumPayload
+import audio.util.toAlbumsPayload
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -37,7 +37,7 @@ class AlbumController {
     fun getAlbum(@PathVariable id: Long): ResponseEntity<AlbumPayload> {
         log.info("attempt to get album with id: $id")
         val album = albumRepository.findById(id).orElseThrow { ResourceNotFoundException("Album", "id", id) }
-        val payload = album.mapToAlbumPayload()
+        val payload = album.toAlbumPayload()
         return ResponseEntity.ok(payload)
     }
 
@@ -45,7 +45,7 @@ class AlbumController {
     fun getAlbum(@RequestParam title: String): ResponseEntity<AlbumPayload> {
         log.info("attempt to get album with title: $title")
         val album = albumRepository.findByTitle(title).orElseThrow { ResourceNotFoundException("Album", "title", title) }
-        val payload = album.mapToAlbumPayload()
+        val payload = album.toAlbumPayload()
         return ResponseEntity.ok(payload)
     }
 
@@ -60,14 +60,14 @@ class AlbumController {
     fun getPopularAlbums(): ArrayList<AlbumPayload> {
         log.info("attempt to get popular albums")
         val sortedAlbums = albumRepository.findByOrderByRatingDesc()
-        return sortedAlbums.mapToAlbumPayloadList()
+        return sortedAlbums.toAlbumsPayload()
     }
 
     @GetMapping("/search")
     fun findAlbum(@RequestParam q: String): ArrayList<AlbumPayload> {
         log.info("attempt to find album by title stars with $q")
         val results = albumRepository.findAllByTitleStartsWith(q)
-        return results.mapToAlbumPayloadList()
+        return results.toAlbumsPayload()
     }
 
     @GetMapping("/{id}/authors")
@@ -101,7 +101,7 @@ class AlbumController {
         )
         val result = albumRepository.save(album)
         log.info("created album id: ${result.id}")
-        return ResponseEntity.ok(result.mapToAlbumPayload())
+        return ResponseEntity.ok(result.toAlbumPayload())
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -122,7 +122,7 @@ class AlbumController {
         album.addAuthor(author)
         authorRepository.save(author)
         log.info("$authorName added successfully")
-        val result = albumRepository.save(album)
+        albumRepository.save(album)
         return ResponseEntity.ok("Author added to album")
     }
 
